@@ -1,7 +1,7 @@
 require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
-const ClientError = require('./exceptions/ClientError')
+const { ClientError } = require('./exceptions')
 // Albums
 const albums = require('./api/albums')
 const AlbumsValidator = require('./validator/albums')
