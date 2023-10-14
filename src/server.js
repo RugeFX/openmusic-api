@@ -69,7 +69,6 @@ function registerPreResponse (request, h) {
         return h.continue
 
       default:
-        console.error(response)
         return h.response({
           status: 'error',
           message: 'Terjadi kegagalan pada server kami'
