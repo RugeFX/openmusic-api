@@ -1,12 +1,29 @@
 /* eslint-disable camelcase */
-const mapDBAlbumToModel = ({
+const mapDBSongToModel = (withId) => ({
   id,
-  name,
-  year
-}) => ({
-  id,
-  name,
-  year
-})
+  title,
+  year,
+  genre,
+  performer,
+  duration,
+  album_id
+}) => withId
+  ? ({
+      id,
+      title,
+      year,
+      genre,
+      performer,
+      duration,
+      albumId: album_id
+    })
+  : ({
+      title,
+      year,
+      genre,
+      performer,
+      duration,
+      albumId: album_id
+    })
 
-module.exports = { mapDBAlbumToModel }
+module.exports = { mapDBSongToModel }

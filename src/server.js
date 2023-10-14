@@ -1,13 +1,19 @@
 require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
-const albums = require('./api/albums')
 const ClientError = require('./exceptions/ClientError')
+// Albums
+const albums = require('./api/albums')
 const AlbumsValidator = require('./validator/albums')
 const AlbumsService = require('./services/postgres/AlbumsService')
+// Songs
+const songs = require('./api/songs')
+const SongsValidator = require('./validator/songs')
+const SongsService = require('./services/postgres/SongsService')
 
 const init = async () => {
   const albumsService = new AlbumsService()
+  const songsService = new SongsService()
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -35,31 +41,42 @@ const init = async () => {
     }
   })
 
-  server.ext('onPreResponse', (request, h) => {
-    const { response } = request
-    if (response instanceof Error) {
-      switch (true) {
-        case (response instanceof ClientError):
-          return h.response({
-            status: 'fail',
-            message: response.message
-          }).code(response.statusCode)
-
-        case (!response.isServer):
-          return h.continue
-
-        default:
-          return h.response({
-            status: 'error',
-            message: 'Terjadi kegagalan pada server kami'
-          }).code(500)
-      }
+  await server.register({
+    plugin: songs,
+    options: {
+      service: songsService,
+      validator: SongsValidator
     }
-    return h.continue
   })
+
+  server.ext('onPreResponse', registerPreResponse)
 
   await server.start()
   console.log(`Server berjalan pada ${server.info.uri}`)
+}
+
+function registerPreResponse (request, h) {
+  const { response } = request
+  if (response instanceof Error) {
+    switch (true) {
+      case (response instanceof ClientError):
+        return h.response({
+          status: 'fail',
+          message: response.message
+        }).code(response.statusCode)
+
+      case (!response.isServer):
+        return h.continue
+
+      default:
+        console.error(response)
+        return h.response({
+          status: 'error',
+          message: 'Terjadi kegagalan pada server kami'
+        }).code(500)
+    }
+  }
+  return h.continue
 }
 
 init()
