@@ -2,8 +2,13 @@ require('dotenv').config()
 
 const Hapi = require('@hapi/hapi')
 const albums = require('./api/albums')
+const ClientError = require('./exceptions/ClientError')
+const AlbumsValidator = require('./validator/albums')
+const AlbumsService = require('./services/postgres/AlbumsService')
 
 const init = async () => {
+  const albumsService = new AlbumsService()
+
   const server = Hapi.server({
     port: process.env.PORT,
     host: process.env.HOST,
@@ -18,20 +23,43 @@ const init = async () => {
     method: 'GET',
     path: '/',
     handler: (req, h) => {
-      return h.response({ message: 'Hello world!' })
+      return h.response({ message: 'Hello world!', version: '1.0.0' })
     }
   })
 
   await server.register({
     plugin: albums,
     options: {
-      service: notesService,
-      validator: NotesValidator
+      service: albumsService,
+      validator: AlbumsValidator
     }
+  })
+
+  server.ext('onPreResponse', (request, h) => {
+    const { response } = request
+    if (response instanceof Error) {
+      switch (true) {
+        case (response instanceof ClientError):
+          return h.response({
+            status: 'fail',
+            message: response.message
+          }).code(response.statusCode)
+
+        case (!response.isServer):
+          return h.continue
+
+        default:
+          return h.response({
+            status: 'error',
+            message: 'Terjadi kegagalan pada server kami'
+          }).code(500)
+      }
+    }
+    return h.continue
   })
 
   await server.start()
   console.log(`Server berjalan pada ${server.info.uri}`)
 }
 
-await init()
+init()

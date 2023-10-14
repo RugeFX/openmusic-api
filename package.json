@@ -5,15 +5,21 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon src/server.js"
+    "dev": "nodemon src/server.js",
+    "migrate": "node-pg-migrate",
+    "lint": "eslint ./src"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@hapi/hapi": "^21.3.2",
-    "auto-bind": "^5.0.1",
-    "dotenv": "^16.3.1"
+    "auto-bind": "4",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "nanoid": "3",
+    "node-pg-migrate": "^6.2.2",
+    "pg": "^8.11.3"
   },
   "devDependencies": {
     "eslint": "^8.0.1",
