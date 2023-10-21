@@ -1,4 +1,6 @@
 class ClientError extends Error {
+  public statusCode: number
+
   constructor (message, statusCode = 400) {
     super(message)
     this.statusCode = statusCode
@@ -6,4 +8,4 @@ class ClientError extends Error {
   }
 }
 
-module.exports = ClientError
+export default ClientError
