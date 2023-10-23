@@ -8,7 +8,7 @@ class SongsHandler {
     autoBind(this)
   }
 
-  async getAllSongsHandler (request, h) {
+  async getAllSongsHandler (request) {
     const songs = await this._service.getSongs({ title: request.query.title, performer: request.query.performer })
 
     return {
@@ -36,7 +36,7 @@ class SongsHandler {
     return response
   }
 
-  async getSongByIdHandler (request, h) {
+  async getSongByIdHandler (request) {
     const { id } = request.params
     const song = await this._service.getSongById(id)
     return {
@@ -47,7 +47,7 @@ class SongsHandler {
     }
   }
 
-  async putSongByIdHandler (request, h) {
+  async putSongByIdHandler (request) {
     this._validator.validateSongPayload(request.payload)
     const { title, year, genre, performer, duration, albumId } = request.payload
     const { id } = request.params
@@ -60,7 +60,7 @@ class SongsHandler {
     }
   }
 
-  async deleteSongByIdHandler (request, h) {
+  async deleteSongByIdHandler (request) {
     const { id } = request.params
     await this._service.deleteSongById(id)
 

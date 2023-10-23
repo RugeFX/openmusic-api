@@ -55,7 +55,7 @@ class SongsService {
     }
     const result = await this._pool.query(query)
 
-    if (!result.rows.length) {
+    if (!result.rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan')
     }
 
@@ -85,6 +85,19 @@ class SongsService {
 
     if (!result.rowCount) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan')
+    }
+  }
+
+  async verifySongExists (id) {
+    const query = {
+      text: 'SELECT id FROM songs WHERE id = $1',
+      values: [id]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Lagu tidak ditemukan')
     }
   }
 }

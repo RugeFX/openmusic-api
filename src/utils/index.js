@@ -26,4 +26,10 @@ const mapDBSongToModel = (withId) => ({
       albumId: album_id
     })
 
-module.exports = { mapDBSongToModel }
+const mapDBPlaylistToResponse = ({ id, name, username }) => ({ id, name, username })
+
+const mapDBPlaylistSongsToResponse = ({ id, title, performer }) => ({ id, title, performer })
+
+const mapDBActivitiesToResponse = ({ username, title, action, time }) => ({ username, title, action, time })
+
+module.exports = { mapDBSongToModel, mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse }
