@@ -26,7 +26,6 @@ const mapDBSongToModel =
     albumId: album_id
   })
 
-
 /**
  * @param {Playlist & { username: User["username"] }} initial
  */

@@ -1,7 +1,7 @@
 const autoBind = require('auto-bind')
 
-/** 
- * @import { Request, ResponseToolkit } from "@hapi/hapi" 
+/**
+ * @import { Request, ResponseToolkit } from "@hapi/hapi"
  * @import AlbumsService from '../../services/postgres/AlbumsService'
  * @import SongsService from '../../services/postgres/SongsService'
  * @typedef {import('../../validator/albums')} AlbumsValidator
@@ -13,7 +13,7 @@ class AlbumsHandler {
    * @param {SongsService} songsService
    * @param {AlbumsValidator} validator
    */
-  constructor(albumsService, songsService, validator) {
+  constructor (albumsService, songsService, validator) {
     /**
      * @type {AlbumsService}
      * @private
@@ -39,7 +39,7 @@ class AlbumsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postAlbumHandler(request, h) {
+  async postAlbumHandler (request, h) {
     this._validator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
 
@@ -59,7 +59,7 @@ class AlbumsHandler {
   /**
    * @param {Request} request
    */
-  async getAlbumByIdHandler(request) {
+  async getAlbumByIdHandler (request) {
     const { id } = request.params
 
     const album = await this._albumsService.getAlbumById(id)
@@ -76,7 +76,7 @@ class AlbumsHandler {
   /**
    * @param {Request} request
    */
-  async putAlbumByIdHandler(request) {
+  async putAlbumByIdHandler (request) {
     this._validator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
     const { id } = request.params
@@ -92,7 +92,7 @@ class AlbumsHandler {
   /**
    * @param {Request} request
    */
-  async deleteAlbumByIdHandler(request) {
+  async deleteAlbumByIdHandler (request) {
     const { id } = request.params
 
     await this._albumsService.deleteAlbumById(id)

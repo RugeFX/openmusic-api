@@ -1,6 +1,6 @@
 const autoBind = require('auto-bind')
 
-/** 
+/**
  * @import { Request, ResponseToolkit } from "@hapi/hapi"
  * @import CollaborationsService from '../../services/postgres/CollaborationsService'
  * @import PlaylistsService from '../../services/postgres/PlaylistsService'
@@ -15,7 +15,7 @@ class CollaborationsHandler {
    * @param {UsersService} usersService
    * @param {CollaborationsValidator} validator
    */
-  constructor(collaborationsService, playlistsService, usersService, validator) {
+  constructor (collaborationsService, playlistsService, usersService, validator) {
     /**
      * @type {CollaborationsService}
      * @private
@@ -47,7 +47,7 @@ class CollaborationsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postCollaborationHandler(request, h) {
+  async postCollaborationHandler (request, h) {
     this._validator.validateCollaborationPayload(request.payload)
     const { id: credentialId } = request.auth.credentials
     const { playlistId, userId } = request.payload
@@ -69,7 +69,7 @@ class CollaborationsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async deleteCollaborationHandler(request, h) {
+  async deleteCollaborationHandler (request, h) {
     this._validator.validateCollaborationPayload(request.payload)
     const { id: credentialId } = request.auth.credentials
     const { playlistId, userId } = request.payload

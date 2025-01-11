@@ -1,7 +1,7 @@
 const autoBind = require('auto-bind')
 const { mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse } = require('../../utils')
 
-/** 
+/**
  * @import { Request, ResponseToolkit } from "@hapi/hapi"
  * @import PlaylistsService from '../../services/postgres/PlaylistsService'
  * @import SongsService from '../../services/postgres/SongsService'
@@ -16,7 +16,7 @@ class PlaylistsHandler {
    * @param {UsersService} usersService
    * @param {PlaylistsValidator} validator
    */
-  constructor(playlistsService, songsService, usersService, validator) {
+  constructor (playlistsService, songsService, usersService, validator) {
     /**
      * @type {PlaylistsService}
      * @private
@@ -47,7 +47,7 @@ class PlaylistsHandler {
   /**
    * @param {Request} request
    */
-  async getPlaylistsHandler(request) {
+  async getPlaylistsHandler (request) {
     const { id: credentialId } = request.auth.credentials
     const playlists = await this._playlistsService.getPlaylists(credentialId)
 
@@ -63,7 +63,7 @@ class PlaylistsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postPlaylistHandler(request, h) {
+  async postPlaylistHandler (request, h) {
     const { id: owner } = request.auth.credentials
 
     this._validator.validatePlaylistPayload(request.payload)
@@ -83,7 +83,7 @@ class PlaylistsHandler {
   /**
    * @param {Request} request
    */
-  async deletePlaylistByIdHandler(request) {
+  async deletePlaylistByIdHandler (request) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
 
@@ -100,7 +100,7 @@ class PlaylistsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postSongToPlaylistHandler(request, h) {
+  async postSongToPlaylistHandler (request, h) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
     const { songId } = request.payload
@@ -123,7 +123,7 @@ class PlaylistsHandler {
   /**
    * @param {Request} request
    */
-  async getSongsFromPlaylistHandler(request) {
+  async getSongsFromPlaylistHandler (request) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
 
@@ -140,7 +140,7 @@ class PlaylistsHandler {
   /**
    * @param {Request} request
    */
-  async deleteSongFromPlaylistHandler(request) {
+  async deleteSongFromPlaylistHandler (request) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
     const { songId } = request.payload
@@ -161,7 +161,7 @@ class PlaylistsHandler {
   /**
    * @param {Request} request
    */
-  async getPlaylistActivitiesHandler(request) {
+  async getPlaylistActivitiesHandler (request) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
 

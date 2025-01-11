@@ -1,6 +1,6 @@
 const autoBind = require('auto-bind')
 
-/** 
+/**
  * @import { Request, ResponseToolkit } from "@hapi/hapi"
  * @import SongsService from '../../services/postgres/SongsService'
  * @typedef {import('../../validator/songs')} SongsValidator
@@ -11,7 +11,7 @@ class SongsHandler {
    * @param {SongsService} service
    * @param {SongsValidator} validator
    */
-  constructor(service, validator) {
+  constructor (service, validator) {
     /**
      * @type {SongsService}
      * @private
@@ -28,7 +28,7 @@ class SongsHandler {
   }
 
   /** @param {Request} request */
-  async getAllSongsHandler(request) {
+  async getAllSongsHandler (request) {
     const songs = await this._service.getSongs({ title: request.query.title, performer: request.query.performer })
 
     return {
@@ -43,7 +43,7 @@ class SongsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postSongHandler(request, h) {
+  async postSongHandler (request, h) {
     this._validator.validateSongPayload(request.payload)
     const { title, year, genre, performer, duration, albumId } = request.payload
 
@@ -62,7 +62,7 @@ class SongsHandler {
   /**
    * @param {Request} request
    */
-  async getSongByIdHandler(request) {
+  async getSongByIdHandler (request) {
     const { id } = request.params
 
     const song = await this._service.getSongById(id)
@@ -78,7 +78,7 @@ class SongsHandler {
   /**
  * @param {Request} request
  */
-  async putSongByIdHandler(request) {
+  async putSongByIdHandler (request) {
     this._validator.validateSongPayload(request.payload)
     const { title, year, genre, performer, duration, albumId } = request.payload
     const { id } = request.params
@@ -94,7 +94,7 @@ class SongsHandler {
   /**
  * @param {Request} request
  */
-  async deleteSongByIdHandler(request) {
+  async deleteSongByIdHandler (request) {
     const { id } = request.params
 
     await this._service.deleteSongById(id)

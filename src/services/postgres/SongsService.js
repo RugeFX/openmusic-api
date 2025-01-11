@@ -4,7 +4,7 @@ const autoBind = require('auto-bind')
 const { InvariantError, NotFoundError } = require('../../exceptions')
 const { mapDBSongToModel } = require('../../utils')
 
-/** 
+/**
  * @typedef {Object} Song
  * @property {string} id
  * @property {string} title
@@ -16,7 +16,7 @@ const { mapDBSongToModel } = require('../../utils')
  */
 
 class SongsService {
-  constructor() {
+  constructor () {
     /**
      * @type {Pool}
      * @private
@@ -30,7 +30,7 @@ class SongsService {
    * @param {Omit<Song, "id">} data
    * @returns {Promise<Song["id"]>}
    */
-  async addSong({ title, year, genre, performer, duration, albumId }) {
+  async addSong ({ title, year, genre, performer, duration, albumId }) {
     const id = `song-${nanoid(16)}`
 
     const query = {
@@ -53,7 +53,7 @@ class SongsService {
    * @param {Song["performer"]} [params.performer]
    * @param {import('./AlbumsService').Album["id"]} [params.albumId]
   */
-  async getSongs({ title, performer, albumId }) {
+  async getSongs ({ title, performer, albumId }) {
     const conditions = []
     const values = []
 
@@ -81,7 +81,7 @@ class SongsService {
   /**
    * @param {Song["id"]} id
    */
-  async getSongById(id) {
+  async getSongById (id) {
     const query = {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id]
@@ -99,7 +99,7 @@ class SongsService {
    * @param {Song["id"]} id
    * @param {Omit<Song, "id">} payload
    */
-  async editSongById(id, { title, year, genre, performer, duration, albumId }) {
+  async editSongById (id, { title, year, genre, performer, duration, albumId }) {
     const query = {
       text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6 WHERE id = $7 RETURNING id',
       values: [title, year, genre, performer, duration, albumId, id]
@@ -115,7 +115,7 @@ class SongsService {
   /**
    * @param {Song["id"]} id
    */
-  async deleteSongById(id) {
+  async deleteSongById (id) {
     const query = {
       text: 'DELETE FROM songs WHERE id = $1 RETURNING id',
       values: [id]
@@ -131,7 +131,7 @@ class SongsService {
   /**
    * @param {Song["id"]} id
    */
-  async verifySongExists(id) {
+  async verifySongExists (id) {
     const query = {
       text: 'SELECT id FROM songs WHERE id = $1',
       values: [id]

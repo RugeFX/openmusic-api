@@ -3,8 +3,8 @@ const { nanoid } = require('nanoid')
 const autoBind = require('auto-bind')
 const { InvariantError, NotFoundError, AuthorizationError } = require('../../exceptions')
 
-/** 
- * @import CollaborationsService from "./CollaborationsService" 
+/**
+ * @import CollaborationsService from "./CollaborationsService"
  * @import { User } from "./UsersService"
  * @import { Song } from "./SongsService"
  */
@@ -28,7 +28,7 @@ const { InvariantError, NotFoundError, AuthorizationError } = require('../../exc
 
 class PlaylistsService {
   /** @param {CollaborationsService} collaborationsService */
-  constructor(collaborationsService) {
+  constructor (collaborationsService) {
     /**
      * @type {Pool}
      * @private
@@ -48,7 +48,7 @@ class PlaylistsService {
    * @param {Pick<Playlist, "name" | "owner">} payload
    * @returns {Promise<Playlist["id"]>}
    */
-  async addPlaylist({ name, owner }) {
+  async addPlaylist ({ name, owner }) {
     const id = `playlist-${nanoid(16)}`
 
     const query = {
@@ -69,7 +69,7 @@ class PlaylistsService {
    * @param {Playlist["owner"]} owner
    * @returns {Promise<Array<Playlist & { username: string }>>}
    */
-  async getPlaylists(owner) {
+  async getPlaylists (owner) {
     const query = {
       text: `SELECT playlists.*, users.username FROM playlists
                     LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
@@ -87,7 +87,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} id
    * @returns {Promise<Playlist & { username: string }>}
    */
-  async getPlaylistById(id) {
+  async getPlaylistById (id) {
     const query = {
       text: `SELECT playlists.*, users.username
                     FROM playlists
@@ -108,7 +108,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} id
    * @returns {Promise<Song[]>}
    */
-  async getPlaylistSongsById(id) {
+  async getPlaylistSongsById (id) {
     const query = {
       text: 'SELECT s.* FROM songs s LEFT JOIN playlist_songs ps ON s.id = ps.song_id WHERE ps.playlist_id = $1',
       values: [id]
@@ -125,7 +125,7 @@ class PlaylistsService {
   /**
    * @param {Playlist["id"]} id
    */
-  async deletePlaylistById(id) {
+  async deletePlaylistById (id) {
     const query = {
       text: 'DELETE FROM playlists WHERE id = $1 RETURNING id',
       values: [id]
@@ -143,7 +143,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} payload.playlistId
    * @param {Song["id"]} payload.songId
    */
-  async addSongToPlaylist({ playlistId, songId }) {
+  async addSongToPlaylist ({ playlistId, songId }) {
     const id = `playlist-song-${nanoid(16)}`
 
     const query = {
@@ -163,7 +163,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} payload.playlistId
    * @param {Song["id"]} payload.songId
    */
-  async deletePlaylistSongById({ playlistId, songId }) {
+  async deletePlaylistSongById ({ playlistId, songId }) {
     const query = {
       text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2',
       values: [playlistId, songId]
@@ -183,7 +183,7 @@ class PlaylistsService {
    * @param {User["id"]} payload.userId
    * @param {string} payload.action
    */
-  async addPlaylistActivity({ action, userId, songId, playlistId }) {
+  async addPlaylistActivity ({ action, userId, songId, playlistId }) {
     const id = `playlist-act-${nanoid(16)}`
 
     const query = {
@@ -199,11 +199,12 @@ class PlaylistsService {
 
     return result.rows[0].id
   }
+
   /**
    * @param {Playlist["id"]} playlistId
    * @returns {Promise<Array<PlaylistSongActivity & { username: User["username"], title: Song["title"] }>>}
    */
-  async getPlaylistActivities(playlistId) {
+  async getPlaylistActivities (playlistId) {
     const query = {
       text: `SELECT playlist_activities.*, users.username, songs.title FROM playlist_activities
                     LEFT JOIN users ON users.id = playlist_activities.user_id
@@ -223,9 +224,9 @@ class PlaylistsService {
   }
 
   /**
-   * @param {Playlist["id"]} playlistId 
+   * @param {Playlist["id"]} playlistId
    */
-  async verifyPlaylistExists(playlistId) {
+  async verifyPlaylistExists (playlistId) {
     const query = {
       text: 'SELECT id FROM playlists WHERE id = $1',
       values: [playlistId]
@@ -242,7 +243,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} playlistId
    * @param {User["id"]} userId
    */
-  async verifyPlaylistOwner(playlistId, userId) {
+  async verifyPlaylistOwner (playlistId, userId) {
     const query = {
       text: 'SELECT * FROM playlists WHERE id = $1',
       values: [playlistId]
@@ -263,7 +264,7 @@ class PlaylistsService {
    * @param {Playlist["id"]} playlistId
    * @param {User["id"]} userId
    */
-  async verifyPlaylistAccess(playlistId, userId) {
+  async verifyPlaylistAccess (playlistId, userId) {
     try {
       await this.verifyPlaylistOwner(playlistId, userId)
     } catch (error) {

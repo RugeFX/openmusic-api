@@ -6,8 +6,8 @@ const TokenManager = {
   generateAccessToken: (payload) => Jwt.token.generate(payload, process.env.ACCESS_TOKEN_KEY),
   /** @param {object} payload */
   generateRefreshToken: (payload) => Jwt.token.generate(payload, process.env.REFRESH_TOKEN_KEY),
-  /** 
-   * @param {string} refreshToken 
+  /**
+   * @param {string} refreshToken
    * @returns {object}
   */
   verifyRefreshToken: (refreshToken) => {

@@ -10,7 +10,7 @@ const InvariantError = require('../../exceptions/InvariantError')
  */
 
 class CollaborationsService {
-  constructor() {
+  constructor () {
     /**
      * @type {Pool}
      * @private
@@ -19,12 +19,12 @@ class CollaborationsService {
   }
 
   /**
-   * 
-   * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
-   * @param {import('./UsersService').User["id"]} userId 
+   *
+   * @param {import('./PlaylistsService').Playlist["id"]} playlistId
+   * @param {import('./UsersService').User["id"]} userId
    * @returns {Promise<Collaboration["id"]>}
    */
-  async addCollaboration(playlistId, userId) {
+  async addCollaboration (playlistId, userId) {
     const id = `collab-${nanoid(16)}`
 
     const query = {
@@ -41,10 +41,10 @@ class CollaborationsService {
   }
 
   /**
-  * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
-  * @param {import('./UsersService').User["id"]} userId 
+  * @param {import('./PlaylistsService').Playlist["id"]} playlistId
+  * @param {import('./UsersService').User["id"]} userId
   */
-  async deleteCollaboration(playlistId, userId) {
+  async deleteCollaboration (playlistId, userId) {
     const query = {
       text: 'DELETE FROM collaborations WHERE playlist_id = $1 AND user_id = $2 RETURNING id',
       values: [playlistId, userId]
@@ -58,11 +58,11 @@ class CollaborationsService {
   }
 
   /**
-   * 
-   * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
-   * @param {import('./UsersService').User["id"]} userId 
+   *
+   * @param {import('./PlaylistsService').Playlist["id"]} playlistId
+   * @param {import('./UsersService').User["id"]} userId
    */
-  async verifyCollaborator(playlistId, userId) {
+  async verifyCollaborator (playlistId, userId) {
     const query = {
       text: 'SELECT * FROM collaborations WHERE playlist_id = $1 AND user_id = $2',
       values: [playlistId, userId]

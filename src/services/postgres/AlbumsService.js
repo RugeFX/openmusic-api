@@ -11,7 +11,7 @@ const { InvariantError, NotFoundError } = require('../../exceptions')
   */
 
 class AlbumsService {
-  constructor() {
+  constructor () {
     /**
      * @type {Pool}
      * @private
@@ -25,7 +25,7 @@ class AlbumsService {
    * @param {Pick<Album, "name" | "year">} payload
    * @returns {Promise<Album["id"]>}
    */
-  async addAlbum({ name, year }) {
+  async addAlbum ({ name, year }) {
     const id = `album-${nanoid(16)}`
 
     const query = {
@@ -46,7 +46,7 @@ class AlbumsService {
    * @param {Album["id"]} id
    * @returns {Promise<Album>}
    */
-  async getAlbumById(id) {
+  async getAlbumById (id) {
     const albumQuery = {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id]
@@ -65,7 +65,7 @@ class AlbumsService {
    * @param {Album["id"]} id
    * @param {Pick<Album, "name" | "year">} payload
    */
-  async editAlbumById(id, { name, year }) {
+  async editAlbumById (id, { name, year }) {
     const query = {
       text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id]
@@ -81,7 +81,7 @@ class AlbumsService {
   /**
    * @param {Album["id"]} id
    */
-  async deleteAlbumById(id) {
+  async deleteAlbumById (id) {
     const query = {
       text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
       values: [id]

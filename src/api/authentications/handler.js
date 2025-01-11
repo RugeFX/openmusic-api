@@ -1,6 +1,6 @@
 const autoBind = require('auto-bind')
 
-/** 
+/**
  * @import { Request, ResponseToolkit } from "@hapi/hapi"
  * @import AuthenticationsService from '../../services/postgres/AuthenticationsService'
  * @import UsersService from '../../services/postgres/UsersService'
@@ -15,7 +15,7 @@ class AuthenticationsHandler {
    * @param {TokenManager} tokenManager
    * @param {AuthenticationsValidator} validator
    */
-  constructor(
+  constructor (
     authenticationsService,
     usersService,
     tokenManager,
@@ -52,7 +52,7 @@ class AuthenticationsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async postAuthenticationHandler(request, h) {
+  async postAuthenticationHandler (request, h) {
     this._validator.validatePostAuthenticationPayload(request.payload)
 
     const { username, password } = request.payload
@@ -79,7 +79,7 @@ class AuthenticationsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async putAuthenticationHandler(request, h) {
+  async putAuthenticationHandler (request, h) {
     this._validator.validatePutAuthenticationPayload(request.payload)
 
     const { refreshToken } = request.payload
@@ -100,7 +100,7 @@ class AuthenticationsHandler {
    * @param {Request} request
    * @param {ResponseToolkit} h
    */
-  async deleteAuthenticationHandler(request, h) {
+  async deleteAuthenticationHandler (request, h) {
     this._validator.validateDeleteAuthenticationPayload(request.payload)
 
     const { refreshToken } = request.payload
