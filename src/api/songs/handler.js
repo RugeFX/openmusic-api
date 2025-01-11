@@ -1,14 +1,34 @@
 const autoBind = require('auto-bind')
 
+/** 
+ * @import { Request, ResponseToolkit } from "@hapi/hapi"
+ * @import SongsService from '../../services/postgres/SongsService'
+ * @typedef {import('../../validator/songs')} SongsValidator
+ */
+
 class SongsHandler {
-  constructor (service, validator) {
+  /**
+   * @param {SongsService} service
+   * @param {SongsValidator} validator
+   */
+  constructor(service, validator) {
+    /**
+     * @type {SongsService}
+     * @private
+     */
     this._service = service
+
+    /**
+     * @type {SongsValidator}
+     * @private
+     */
     this._validator = validator
 
     autoBind(this)
   }
 
-  async getAllSongsHandler (request) {
+  /** @param {Request} request */
+  async getAllSongsHandler(request) {
     const songs = await this._service.getSongs({ title: request.query.title, performer: request.query.performer })
 
     return {
@@ -19,7 +39,11 @@ class SongsHandler {
     }
   }
 
-  async postSongHandler (request, h) {
+  /**
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
+  async postSongHandler(request, h) {
     this._validator.validateSongPayload(request.payload)
     const { title, year, genre, performer, duration, albumId } = request.payload
 
@@ -31,14 +55,18 @@ class SongsHandler {
       data: {
         songId
       }
-    })
-    response.code(201)
+    }).code(201)
     return response
   }
 
-  async getSongByIdHandler (request) {
+  /**
+   * @param {Request} request
+   */
+  async getSongByIdHandler(request) {
     const { id } = request.params
+
     const song = await this._service.getSongById(id)
+
     return {
       status: 'success',
       data: {
@@ -47,7 +75,10 @@ class SongsHandler {
     }
   }
 
-  async putSongByIdHandler (request) {
+  /**
+ * @param {Request} request
+ */
+  async putSongByIdHandler(request) {
     this._validator.validateSongPayload(request.payload)
     const { title, year, genre, performer, duration, albumId } = request.payload
     const { id } = request.params
@@ -60,8 +91,12 @@ class SongsHandler {
     }
   }
 
-  async deleteSongByIdHandler (request) {
+  /**
+ * @param {Request} request
+ */
+  async deleteSongByIdHandler(request) {
     const { id } = request.params
+
     await this._service.deleteSongById(id)
 
     return {

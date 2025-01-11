@@ -1,18 +1,49 @@
 const autoBind = require('auto-bind')
 
+/** 
+ * @import { Request, ResponseToolkit } from "@hapi/hapi" 
+ * @import AlbumsService from '../../services/postgres/AlbumsService'
+ * @import SongsService from '../../services/postgres/SongsService'
+ * @typedef {import('../../validator/albums')} AlbumsValidator
+ */
+
 class AlbumsHandler {
-  constructor (service, validator) {
-    this._service = service
+  /**
+   * @param {AlbumsService} albumsService
+   * @param {SongsService} songsService
+   * @param {AlbumsValidator} validator
+   */
+  constructor(albumsService, songsService, validator) {
+    /**
+     * @type {AlbumsService}
+     * @private
+     */
+    this._albumsService = albumsService
+
+    /**
+     * @type {SongsService}
+     * @private
+     */
+    this._songsService = songsService
+
+    /**
+     * @type {AlbumsValidator}
+     * @private
+     */
     this._validator = validator
 
     autoBind(this)
   }
 
-  async postAlbumHandler (request, h) {
+  /**
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
+  async postAlbumHandler(request, h) {
     this._validator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
 
-    const albumId = await this._service.addAlbum({ name, year })
+    const albumId = await this._albumsService.addAlbum({ name, year })
 
     const response = h.response({
       status: 'success',
@@ -25,25 +56,32 @@ class AlbumsHandler {
     return response
   }
 
-  async getAlbumByIdHandler (request) {
+  /**
+   * @param {Request} request
+   */
+  async getAlbumByIdHandler(request) {
     const { id } = request.params
-    const [album, songs] = await this._service.getAlbumById(id)
-    album.songs = songs
+
+    const album = await this._albumsService.getAlbumById(id)
+    const songs = await this._songsService.getSongs({ albumId: id })
 
     return {
       status: 'success',
       data: {
-        album
+        album: { ...album, songs }
       }
     }
   }
 
-  async putAlbumByIdHandler (request) {
+  /**
+   * @param {Request} request
+   */
+  async putAlbumByIdHandler(request) {
     this._validator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
     const { id } = request.params
 
-    await this._service.editAlbumById(id, { name, year })
+    await this._albumsService.editAlbumById(id, { name, year })
 
     return {
       status: 'success',
@@ -51,9 +89,13 @@ class AlbumsHandler {
     }
   }
 
-  async deleteAlbumByIdHandler (request) {
+  /**
+   * @param {Request} request
+   */
+  async deleteAlbumByIdHandler(request) {
     const { id } = request.params
-    await this._service.deleteAlbumById(id)
+
+    await this._albumsService.deleteAlbumById(id)
 
     return {
       status: 'success',

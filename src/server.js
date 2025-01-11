@@ -29,6 +29,10 @@ const collaborations = require('./api/collaborations')
 const CollaborationsService = require('./services/postgres/CollaborationsService')
 const CollaborationsValidator = require('./validator/collaborations')
 
+/**
+ * @import { HapiJwt } from "@hapi/jwt"
+ */
+
 const init = async () => {
   const albumsService = new AlbumsService()
   const songsService = new SongsService()
@@ -63,12 +67,14 @@ const init = async () => {
 
   server.auth.strategy('jwtauth', 'jwt', {
     keys: process.env.ACCESS_TOKEN_KEY,
+    /** @type {HapiJwt.VerifyKeyOptions} */
     verify: {
       aud: false,
       iss: false,
       sub: false,
       maxAgeSec: Number(process.env.ACCESS_TOKEN_AGE)
     },
+    /** @type {HapiJwt.OptionsValidateFunction} */
     validate: async (artifacts) => ({
       isValid: true,
       credentials: {
@@ -77,49 +83,57 @@ const init = async () => {
     })
   })
 
-  await server.register([{
-    plugin: albums,
-    options: {
-      service: albumsService,
-      validator: AlbumsValidator
+  await server.register([
+    {
+      plugin: albums,
+      options: {
+        albumsService,
+        songsService,
+        validator: AlbumsValidator
+      }
+    },
+    {
+      plugin: songs,
+      options: {
+        service: songsService,
+        validator: SongsValidator
+      }
+    },
+    {
+      plugin: users,
+      options: {
+        service: usersService,
+        validator: UsersValidator
+      }
+    },
+    {
+      plugin: authentications,
+      options: {
+        authenticationsService: authService,
+        usersService,
+        tokenManager: TokenManager,
+        validator: AuthenticationsValidator
+      }
+    },
+    {
+      plugin: playlists,
+      options: {
+        playlistsService,
+        songsService,
+        usersService,
+        validator: PlaylistsValidator
+      }
+    },
+    {
+      plugin: collaborations,
+      options: {
+        collaborationsService,
+        playlistsService,
+        usersService,
+        validator: CollaborationsValidator
+      }
     }
-  }, {
-    plugin: songs,
-    options: {
-      service: songsService,
-      validator: SongsValidator
-    }
-  }, {
-    plugin: users,
-    options: {
-      service: usersService,
-      validator: UsersValidator
-    }
-  }, {
-    plugin: authentications,
-    options: {
-      authenticationsService: authService,
-      usersService,
-      tokenManager: TokenManager,
-      validator: AuthenticationsValidator
-    }
-  }, {
-    plugin: playlists,
-    options: {
-      playlistsService,
-      songsService,
-      usersService,
-      validator: PlaylistsValidator
-    }
-  }, {
-    plugin: collaborations,
-    options: {
-      collaborationsService,
-      playlistsService,
-      usersService,
-      validator: CollaborationsValidator
-    }
-  }])
+  ])
 
   server.ext('onPreResponse', registerPreResponse)
 
@@ -127,22 +141,31 @@ const init = async () => {
   console.log(`Server berjalan pada ${server.info.uri}`)
 }
 
-function registerPreResponse (request, h) {
+/**
+ * @param {import('@hapi/hapi').Request} request
+ * @param {import('@hapi/hapi').ResponseToolkit} h
+ * @returns
+ */
+function registerPreResponse(request, h) {
   const { response } = request
   if (response instanceof Error) {
     if (response instanceof ClientError) {
-      return h.response({
-        status: 'fail',
-        message: response.message
-      }).code(response.statusCode)
+      return h
+        .response({
+          status: 'fail',
+          message: response.message
+        })
+        .code(response.statusCode)
     }
 
     return !response.isServer
       ? h.continue
-      : h.response({
-        status: 'error',
-        message: 'Terjadi kegagalan pada server kami'
-      }).code(500)
+      : h
+        .response({
+          status: 'error',
+          message: 'Terjadi kegagalan pada server kami'
+        })
+        .code(500)
   }
   return h.continue
 }

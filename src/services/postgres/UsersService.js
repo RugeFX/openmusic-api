@@ -4,13 +4,29 @@ const { nanoid } = require('nanoid')
 const { hash, compare } = require('bcrypt')
 const autoBind = require('auto-bind')
 
+/**
+ * @typedef {Object} User
+ * @property {string} id
+ * @property {string} username
+ * @property {string} fullname
+ * @property {string} password
+ */
+
 class UsersService {
   constructor () {
+    /**
+     * @type {Pool}
+     * @private
+     */
     this._pool = new Pool()
 
     autoBind(this)
   }
 
+  /**
+   * @param {Omit<User, "id">} data
+   * @returns {Promise<User["id"]>}
+   */
   async addUser (data) {
     await this.verifyNewUsername(data.username)
 
@@ -29,6 +45,10 @@ class UsersService {
     return result.rows[0].id
   }
 
+  /**
+   * @param {string} userId
+   * @returns {Promise<User>}
+   */
   async getUserById (userId) {
     const query = {
       text: 'SELECT id, username, fullname FROM users WHERE id = $1',
@@ -44,6 +64,9 @@ class UsersService {
     return result.rows[0]
   }
 
+  /**
+   * @param {User["username"]} username
+   */
   async verifyNewUsername (username) {
     const query = {
       text: 'SELECT username FROM users WHERE username = $1',
@@ -57,6 +80,11 @@ class UsersService {
     }
   }
 
+  /**
+   * @param {User["username"]} username
+   * @param {User["password"]} password
+   * @returns {Promise<User["id"]>}
+   */
   async verifyUserCredential (username, password) {
     const query = {
       text: 'SELECT id, password FROM users WHERE username = $1',
@@ -76,15 +104,21 @@ class UsersService {
     if (!match) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah')
     }
+
     return id
   }
 
+  /**
+   * @param {User["username"]} username
+   * @returns {Promise<User[]>}
+   */
   async getUsersByUsername (username) {
     const query = {
       text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
       values: [`%${username}%`]
     }
     const result = await this._pool.query(query)
+
     return result.rows
   }
 }

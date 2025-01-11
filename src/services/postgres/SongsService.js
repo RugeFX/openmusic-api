@@ -1,17 +1,36 @@
 const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
-const { InvariantError, NotFoundError } = require('../../exceptions')
 const autoBind = require('auto-bind')
+const { InvariantError, NotFoundError } = require('../../exceptions')
 const { mapDBSongToModel } = require('../../utils')
 
+/** 
+ * @typedef {Object} Song
+ * @property {string} id
+ * @property {string} title
+ * @property {number} year
+ * @property {string} performer
+ * @property {string} genre
+ * @property {number} duration
+ * @property {import('./AlbumsService').Album["id"]} albumId
+ */
+
 class SongsService {
-  constructor () {
+  constructor() {
+    /**
+     * @type {Pool}
+     * @private
+     */
     this._pool = new Pool()
 
     autoBind(this)
   }
 
-  async addSong ({ title, year, genre, performer, duration, albumId }) {
+  /**
+   * @param {Omit<Song, "id">} data
+   * @returns {Promise<Song["id"]>}
+   */
+  async addSong({ title, year, genre, performer, duration, albumId }) {
     const id = `song-${nanoid(16)}`
 
     const query = {
@@ -28,7 +47,13 @@ class SongsService {
     return result.rows[0].id
   }
 
-  async getSongs ({ title, performer }) {
+  /**
+   * @param {Object} params
+   * @param {Song["title"]} [params.title]
+   * @param {Song["performer"]} [params.performer]
+   * @param {import('./AlbumsService').Album["id"]} [params.albumId]
+  */
+  async getSongs({ title, performer, albumId }) {
     const conditions = []
     const values = []
 
@@ -42,13 +67,21 @@ class SongsService {
       values.push(`%${performer}%`)
     }
 
+    if (albumId) {
+      conditions.push(`album_id = $${values.length + 1}`)
+      values.push(albumId)
+    }
+
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
     const result = await this._pool.query(`SELECT * FROM songs ${whereClause}`, values)
-    return result.rows.map(mapDBSongToModel(true))
+    return result.rows.map(mapDBSongToModel)
   }
 
-  async getSongById (id) {
+  /**
+   * @param {Song["id"]} id
+   */
+  async getSongById(id) {
     const query = {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id]
@@ -59,10 +92,14 @@ class SongsService {
       throw new NotFoundError('Lagu tidak ditemukan')
     }
 
-    return result.rows.map(mapDBSongToModel(true))[0]
+    return result.rows.map(mapDBSongToModel)[0]
   }
 
-  async editSongById (id, { title, year, genre, performer, duration, albumId }) {
+  /**
+   * @param {Song["id"]} id
+   * @param {Omit<Song, "id">} payload
+   */
+  async editSongById(id, { title, year, genre, performer, duration, albumId }) {
     const query = {
       text: 'UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, album_id = $6 WHERE id = $7 RETURNING id',
       values: [title, year, genre, performer, duration, albumId, id]
@@ -75,7 +112,10 @@ class SongsService {
     }
   }
 
-  async deleteSongById (id) {
+  /**
+   * @param {Song["id"]} id
+   */
+  async deleteSongById(id) {
     const query = {
       text: 'DELETE FROM songs WHERE id = $1 RETURNING id',
       values: [id]
@@ -88,7 +128,10 @@ class SongsService {
     }
   }
 
-  async verifySongExists (id) {
+  /**
+   * @param {Song["id"]} id
+   */
+  async verifySongExists(id) {
     const query = {
       text: 'SELECT id FROM songs WHERE id = $1',
       values: [id]

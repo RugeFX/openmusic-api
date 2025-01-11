@@ -2,6 +2,7 @@ const { SongPayloadSchema } = require('./schema')
 const { InvariantError } = require('../../exceptions')
 
 const SongsValidator = {
+  /** @param {unknown} payload */
   validateSongPayload: (payload) => {
     const validationResult = SongPayloadSchema.validate(payload)
     if (validationResult.error) {

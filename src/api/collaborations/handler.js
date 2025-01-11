@@ -1,16 +1,53 @@
 const autoBind = require('auto-bind')
 
+/** 
+ * @import { Request, ResponseToolkit } from "@hapi/hapi"
+ * @import CollaborationsService from '../../services/postgres/CollaborationsService'
+ * @import PlaylistsService from '../../services/postgres/PlaylistsService'
+ * @import UsersService from '../../services/postgres/UsersService'
+ * @typedef {import('../../validator/collaborations')} CollaborationsValidator
+ */
+
 class CollaborationsHandler {
-  constructor (collaborationsService, playlistsService, usersService, validator) {
+  /**
+   * @param {CollaborationsService} collaborationsService
+   * @param {PlaylistsService} playlistsService
+   * @param {UsersService} usersService
+   * @param {CollaborationsValidator} validator
+   */
+  constructor(collaborationsService, playlistsService, usersService, validator) {
+    /**
+     * @type {CollaborationsService}
+     * @private
+     */
     this._collaborationsService = collaborationsService
+
+    /**
+     * @type {PlaylistsService}
+     * @private
+     */
     this._playlistsService = playlistsService
+
+    /**
+     * @type {UsersService}
+     * @private
+     */
     this._usersService = usersService
+
+    /**
+     * @type {CollaborationsValidator}
+     * @private
+     */
     this._validator = validator
 
     autoBind(this)
   }
 
-  async postCollaborationHandler (request, h) {
+  /**
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
+  async postCollaborationHandler(request, h) {
     this._validator.validateCollaborationPayload(request.payload)
     const { id: credentialId } = request.auth.credentials
     const { playlistId, userId } = request.payload
@@ -28,7 +65,11 @@ class CollaborationsHandler {
     }).code(201)
   }
 
-  async deleteCollaborationHandler (request, h) {
+  /**
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
+  async deleteCollaborationHandler(request, h) {
     this._validator.validateCollaborationPayload(request.payload)
     const { id: credentialId } = request.auth.credentials
     const { playlistId, userId } = request.payload

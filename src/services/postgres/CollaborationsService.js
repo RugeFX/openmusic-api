@@ -2,12 +2,29 @@ const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
 const InvariantError = require('../../exceptions/InvariantError')
 
+/**
+ * @typedef {Object} Collaboration
+ * @property {string} id
+ * @property {import('./PlaylistsService').Playlist["id"]} playlistId
+ * @property {import('./UsersService').User["id"]} userId
+ */
+
 class CollaborationsService {
-  constructor () {
+  constructor() {
+    /**
+     * @type {Pool}
+     * @private
+     */
     this._pool = new Pool()
   }
 
-  async addCollaboration (playlistId, userId) {
+  /**
+   * 
+   * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
+   * @param {import('./UsersService').User["id"]} userId 
+   * @returns {Promise<Collaboration["id"]>}
+   */
+  async addCollaboration(playlistId, userId) {
     const id = `collab-${nanoid(16)}`
 
     const query = {
@@ -23,7 +40,11 @@ class CollaborationsService {
     return result.rows[0].id
   }
 
-  async deleteCollaboration (playlistId, userId) {
+  /**
+  * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
+  * @param {import('./UsersService').User["id"]} userId 
+  */
+  async deleteCollaboration(playlistId, userId) {
     const query = {
       text: 'DELETE FROM collaborations WHERE playlist_id = $1 AND user_id = $2 RETURNING id',
       values: [playlistId, userId]
@@ -36,7 +57,12 @@ class CollaborationsService {
     }
   }
 
-  async verifyCollaborator (playlistId, userId) {
+  /**
+   * 
+   * @param {import('./PlaylistsService').Playlist["id"]} playlistId 
+   * @param {import('./UsersService').User["id"]} userId 
+   */
+  async verifyCollaborator(playlistId, userId) {
     const query = {
       text: 'SELECT * FROM collaborations WHERE playlist_id = $1 AND user_id = $2',
       values: [playlistId, userId]

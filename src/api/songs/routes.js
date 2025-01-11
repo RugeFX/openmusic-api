@@ -1,3 +1,4 @@
+/** @type {(handler: import("./handler")) => import("@hapi/hapi").ServerRoute[]} */
 const routes = (handler) => [
   {
     method: 'GET',

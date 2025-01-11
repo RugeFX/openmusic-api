@@ -6,17 +6,21 @@ exports.up = (pgm) => {
       type: 'VARCHAR(50)',
       primaryKey: true
     },
-    username: {
-      type: 'VARCHAR(50)',
-      notNull: true
-    },
-    title: {
-      type: 'TEXT',
-      notNull: true
-    },
     action: {
       type: 'VARCHAR(10)',
       notNull: true
+    },
+    user_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+      references: '"users"',
+      onDelete: 'cascade'
+    },
+    song_id: {
+      type: 'VARCHAR(50)',
+      notNull: true,
+      references: '"songs"',
+      onDelete: 'cascade'
     },
     playlist_id: {
       type: 'VARCHAR(50)',
@@ -28,9 +32,11 @@ exports.up = (pgm) => {
       type: 'timestamp',
       notNull: true,
       default: new PgLiteral('current_timestamp')
-    }
+    },
   })
 
+  pgm.createIndex('playlist_activities', 'user_id')
+  pgm.createIndex('playlist_activities', 'song_id')
   pgm.createIndex('playlist_activities', 'playlist_id')
 }
 
