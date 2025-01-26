@@ -28,6 +28,7 @@ const PlaylistsValidator = require('./validator/playlsits')
 const collaborations = require('./api/collaborations')
 const CollaborationsService = require('./services/postgres/CollaborationsService')
 const CollaborationsValidator = require('./validator/collaborations')
+const config = require('./utils/config')
 
 /**
  * @import { HapiJwt } from "@hapi/jwt"
@@ -42,8 +43,8 @@ const init = async () => {
   const playlistsService = new PlaylistsService(collaborationsService)
 
   const server = Hapi.server({
-    port: process.env.PORT || 5000,
-    host: process.env.HOST || 'localhost',
+    port: config.app.port,
+    host: config.app.host,
     routes: {
       cors: {
         origin: ['*']
@@ -66,13 +67,13 @@ const init = async () => {
   ])
 
   server.auth.strategy('jwtauth', 'jwt', {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: config.token.accessTokenKey,
     /** @type {HapiJwt.VerifyKeyOptions} */
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: Number(process.env.ACCESS_TOKEN_AGE)
+      maxAgeSec: config.token.accessTokenAge
     },
     /** @type {HapiJwt.OptionsValidateFunction} */
     validate: async (artifacts) => ({
@@ -146,7 +147,7 @@ const init = async () => {
  * @param {import('@hapi/hapi').ResponseToolkit} h
  * @returns
  */
-function registerPreResponse (request, h) {
+function registerPreResponse(request, h) {
   const { response } = request
   if (response instanceof Error) {
     if (response instanceof ClientError) {
