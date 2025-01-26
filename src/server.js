@@ -29,6 +29,10 @@ const collaborations = require('./api/collaborations')
 const CollaborationsService = require('./services/postgres/CollaborationsService')
 const CollaborationsValidator = require('./validator/collaborations')
 const config = require('./utils/config')
+// Exports
+const _exports = require('./api/exports');
+const ProducerService = require('./services/rabbitmq/ProducerService');
+const ExportsValidator = require('./validator/exports');
 
 /**
  * @import { HapiJwt } from "@hapi/jwt"
@@ -133,7 +137,15 @@ const init = async () => {
         usersService,
         validator: CollaborationsValidator
       }
-    }
+    },
+    {
+      plugin: _exports,
+      options: {
+        playlistsService,
+        producerService: ProducerService,
+        validator: ExportsValidator,
+      },
+    },
   ])
 
   server.ext('onPreResponse', registerPreResponse)
@@ -158,6 +170,8 @@ function registerPreResponse(request, h) {
         })
         .code(response.statusCode)
     }
+
+    console.log(response)
 
     return !response.isServer
       ? h.continue
