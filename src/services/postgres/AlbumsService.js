@@ -2,12 +2,14 @@ const { Pool } = require('pg')
 const { nanoid } = require('nanoid')
 const autoBind = require('auto-bind')
 const { InvariantError, NotFoundError } = require('../../exceptions')
+const { mapDBAlbumToModel } = require('../../utils')
 
 /**
   * @typedef {Object} Album
   * @property {string} id
   * @property {string} name
   * @property {number} year
+  * @property {string} coverUrl
   */
 
 class AlbumsService {
@@ -58,7 +60,7 @@ class AlbumsService {
       throw new NotFoundError('Album tidak ditemukan')
     }
 
-    return albumResult.rows[0]
+    return albumResult.rows.map(mapDBAlbumToModel)[0]
   }
 
   /**
@@ -91,6 +93,23 @@ class AlbumsService {
 
     if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan')
+    }
+  }
+
+  /**
+   * @param {Album["id"]} id
+   * @param {string} coverUrl
+   */
+  async editAlbumCoverById (id, coverUrl) {
+    const query = {
+      text: 'UPDATE albums SET cover_url = $1 WHERE id = $2 RETURNING id',
+      values: [coverUrl, id]
+    }
+
+    const result = await this._pool.query(query)
+
+    if (!result.rowCount) {
+      throw new NotFoundError('Gagal memperbarui cover album. Id tidak ditemukan')
     }
   }
 }

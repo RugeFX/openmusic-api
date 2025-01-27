@@ -1,24 +1,24 @@
-const amqp = require('amqplib');
-const config = require('../../utils/config');
+const amqp = require('amqplib')
+const config = require('../../utils/config')
 
 const ProducerService = {
-    /**
+  /**
      * @param {string} queue
      * @param {string} message
      */
-    sendMessage: async (queue, message) => {
-        const connection = await amqp.connect(config.rabbitMq.server);
-        const channel = await connection.createChannel();
-        await channel.assertQueue(queue, {
-            durable: true,
-        });
+  sendMessage: async (queue, message) => {
+    const connection = await amqp.connect(config.rabbitMq.server)
+    const channel = await connection.createChannel()
+    await channel.assertQueue(queue, {
+      durable: true
+    })
 
-        channel.sendToQueue(queue, Buffer.from(message));
+    channel.sendToQueue(queue, Buffer.from(message))
 
-        setTimeout(() => {
-            connection.close();
-        }, 1000);
-    },
-};
+    setTimeout(() => {
+      connection.close()
+    }, 1000)
+  }
+}
 
-module.exports = ProducerService;
+module.exports = ProducerService

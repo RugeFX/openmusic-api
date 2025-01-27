@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+const config = require('./config')
 
 /**
  * @import { Song } from '../services/postgres/SongsService'
@@ -45,4 +46,15 @@ const mapDBPlaylistSongsToResponse = ({ id, title, performer }) => ({ id, title,
  */
 const mapDBActivitiesToResponse = ({ username, title, action, time }) => ({ username, title, action, time })
 
-module.exports = { mapDBSongToModel, mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse }
+/**
+ *
+ * @param {Object} initial
+ * @param {string} initial.id
+ * @param {string} initial.name
+ * @param {number} initial.year
+ * @param {string | null} initial.cover_url
+ * @returns
+ */
+const mapDBAlbumToModel = ({ id, name, year, cover_url }) => ({ id, name, year, coverUrl: cover_url ? `http://${config.app.host}:${config.app.port}/upload/covers/${cover_url}` : null })
+
+module.exports = { mapDBSongToModel, mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse, mapDBAlbumToModel }
