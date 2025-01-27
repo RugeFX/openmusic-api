@@ -38,13 +38,15 @@ const ExportsValidator = require('./validator/exports')
 // Storage
 const StorageService = require('./services/storage/StorageService')
 const UploadsValidator = require('./validator/uploads')
+const CacheService = require('./services/redis/CacheService')
 
 /**
  * @import { HapiJwt } from "@hapi/jwt"
  */
 
 const init = async () => {
-  const albumsService = new AlbumsService()
+  const cacheService = new CacheService()
+  const albumsService = new AlbumsService(cacheService)
   const songsService = new SongsService()
   const usersService = new UsersService()
   const authService = new AuthenticationsService()
@@ -177,7 +179,7 @@ const init = async () => {
  * @param {import('@hapi/hapi').ResponseToolkit} h
  * @returns
  */
-function registerPreResponse (request, h) {
+function registerPreResponse(request, h) {
   const { response } = request
   if (response instanceof Error) {
     if (response instanceof ClientError) {

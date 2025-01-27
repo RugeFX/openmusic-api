@@ -5,6 +5,10 @@ const { InvariantError, NotFoundError } = require('../../exceptions')
 const { mapDBAlbumToModel } = require('../../utils')
 
 /**
+ * @import CacheService from '../redis/CacheService'
+ */
+
+/**
  * @typedef {Object} Album
  * @property {string} id
  * @property {string} name
@@ -13,12 +17,17 @@ const { mapDBAlbumToModel } = require('../../utils')
  */
 
 class AlbumsService {
-  constructor () {
+  /**
+   * @param {CacheService} cacheService 
+   */
+  constructor(cacheService) {
     /**
          * @type {Pool}
          * @private
          */
     this._pool = new Pool()
+
+    this._cacheService = cacheService;
 
     autoBind(this)
   }
@@ -27,7 +36,7 @@ class AlbumsService {
      * @param {Pick<Album, "name" | "year">} payload
      * @returns {Promise<Album["id"]>}
      */
-  async addAlbum ({ name, year }) {
+  async addAlbum({ name, year }) {
     const id = `album-${nanoid(16)}`
 
     const query = {
@@ -48,7 +57,7 @@ class AlbumsService {
      * @param {Album["id"]} id
      * @returns {Promise<Album>}
      */
-  async getAlbumById (id) {
+  async getAlbumById(id) {
     const albumQuery = {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id]
@@ -67,7 +76,7 @@ class AlbumsService {
      * @param {Album["id"]} id
      * @param {Pick<Album, "name" | "year">} payload
      */
-  async editAlbumById (id, { name, year }) {
+  async editAlbumById(id, { name, year }) {
     const query = {
       text: 'UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id',
       values: [name, year, id]
@@ -85,7 +94,7 @@ class AlbumsService {
   /**
      * @param {Album["id"]} id
      */
-  async deleteAlbumById (id) {
+  async deleteAlbumById(id) {
     const query = {
       text: 'DELETE FROM albums WHERE id = $1 RETURNING id',
       values: [id]
@@ -96,13 +105,15 @@ class AlbumsService {
     if (!result.rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan')
     }
+
+    await this._cacheService.delete(`likes:${id}`);
   }
 
   /**
      * @param {Album["id"]} id
      * @param {string} coverUrl
      */
-  async editAlbumCoverById (id, coverUrl) {
+  async editAlbumCoverById(id, coverUrl) {
     const query = {
       text: 'UPDATE albums SET cover_url = $1 WHERE id = $2 RETURNING id',
       values: [coverUrl, id]
@@ -119,28 +130,37 @@ class AlbumsService {
 
   /**
      * @param {Album["id"]} id
-     * @returns {Promise<{likes: number}>}
+     * @returns {Promise<{via: "database" | "cache", likes: number}>}
      */
-  async getAlbumLikesById (id) {
-    const likesQuery = {
-      text: 'SELECT COUNT(1) AS likes FROM user_album_likes WHERE album_id = $1',
-      values: [id]
+  async getAlbumLikesById(id) {
+    try {
+      const result = await this._cacheService.get(`likes:${id}`);
+
+      return { via: "cache", likes: parseInt(result) };
+    } catch (e) {
+      const query = {
+        text: 'SELECT COUNT(1) FROM user_album_likes WHERE album_id = $1',
+        values: [id]
+      }
+
+      const result = await this._pool.query(query)
+
+      if (!result.rowCount) {
+        throw new NotFoundError('Album tidak ditemukan')
+      }
+
+      const likes = parseInt(result.rows[0].count)
+      await this._cacheService.set(`likes:${id}`, `${likes}`, 1800);
+
+      return { via: "database", likes }
     }
-
-    const likesResult = await this._pool.query(likesQuery)
-
-    if (!likesResult.rowCount) {
-      throw new NotFoundError('Album tidak ditemukan')
-    }
-
-    return likesResult.rows[0]
   }
 
   /**
      * @param {import('./UsersService').User["id"]} userId
      * @param {Album["id"]} albumId
      */
-  async likeAlbumById (userId, albumId) {
+  async likeAlbumById(userId, albumId) {
     const id = `like-${nanoid(16)}`
 
     const query = {
@@ -154,6 +174,8 @@ class AlbumsService {
       throw new InvariantError('Like gagal ditambahkan')
     }
 
+    await this._cacheService.delete(`likes:${albumId}`);
+
     return result.rows[0]
   }
 
@@ -161,7 +183,7 @@ class AlbumsService {
      * @param {import('./UsersService').User["id"]} userId
      * @param {Album["id"]} albumId
      */
-  async unlikeAlbumById (userId, albumId) {
+  async unlikeAlbumById(userId, albumId) {
     const query = {
       text: 'DELETE FROM user_album_likes WHERE user_id = $1 AND album_id = $2 RETURNING id',
       values: [userId, albumId]
@@ -173,6 +195,8 @@ class AlbumsService {
       throw new NotFoundError('Like gagal dihapus. Id tidak ditemukan')
     }
 
+    await this._cacheService.delete(`likes:${albumId}`);
+
     return result.rows[0]
   }
 
@@ -180,7 +204,7 @@ class AlbumsService {
      * @param {import('./UsersService').User["id"]} userId
      * @param {Album["id"]} albumId
      */
-  async verifyUserHasntLikedAlbum (userId, albumId) {
+  async verifyUserHasntLikedAlbum(userId, albumId) {
     const query = {
       text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
       values: [userId, albumId]

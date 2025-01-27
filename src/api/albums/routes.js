@@ -29,6 +29,22 @@ const routes = (handler) => [
   },
   {
     method: 'POST',
+    path: '/albums/{id}/likes',
+    handler: handler.postAlbumLikeByIdHandler,
+    options: {
+      auth: 'jwtauth'
+    }
+  },
+  {
+    method: 'DELETE',
+    path: '/albums/{id}/likes',
+    handler: handler.deleteAlbumLikeByIdHandler,
+    options: {
+      auth: 'jwtauth'
+    }
+  },
+  {
+    method: 'POST',
     path: '/albums/{id}/covers',
     handler: handler.postUploadAlbumCoverHandler,
     options: {
