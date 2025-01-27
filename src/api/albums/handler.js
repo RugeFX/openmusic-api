@@ -17,7 +17,7 @@ class AlbumsHandler {
      * @param {AlbumsValidator} albumsValidator
      * @param {UploadsValidator} uploadsValidator
      */
-  constructor(
+  constructor (
     albumsService,
     songsService,
     storageService,
@@ -61,7 +61,7 @@ class AlbumsHandler {
      * @param {Request} request
      * @param {ResponseToolkit} h
      */
-  async postAlbumHandler(request, h) {
+  async postAlbumHandler (request, h) {
     this._albumsValidator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
 
@@ -81,7 +81,7 @@ class AlbumsHandler {
   /**
      * @param {Request} request
      */
-  async getAlbumByIdHandler(request) {
+  async getAlbumByIdHandler (request) {
     const { id } = request.params
 
     const album = await this._albumsService.getAlbumById(id)
@@ -98,7 +98,7 @@ class AlbumsHandler {
   /**
      * @param {Request} request
      */
-  async putAlbumByIdHandler(request) {
+  async putAlbumByIdHandler (request) {
     this._albumsValidator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
     const { id } = request.params
@@ -114,7 +114,7 @@ class AlbumsHandler {
   /**
      * @param {Request} request
      */
-  async deleteAlbumByIdHandler(request) {
+  async deleteAlbumByIdHandler (request) {
     const { id } = request.params
 
     await this._albumsService.deleteAlbumById(id)
@@ -129,7 +129,7 @@ class AlbumsHandler {
      * @param {Request} request
      * @param {ResponseToolkit} h
      */
-  async postUploadAlbumCoverHandler(request, h) {
+  async postUploadAlbumCoverHandler (request, h) {
     const { cover } = request.payload
     const { id } = request.params
 
@@ -158,15 +158,14 @@ class AlbumsHandler {
      * @param {Request} request
      * @param {ResponseToolkit} h
      */
-  async getAlbumLikesByIdHandler(request, h) {
+  async getAlbumLikesByIdHandler (request, h) {
     const { via, likes } = await this._albumsService.getAlbumLikesById(
       request.params.id
     )
 
     const response = h.response({ status: 'success', data: { likes } })
 
-    if (via === "cache")
-      return response.header("X-Data-Source", "cache")
+    if (via === 'cache') { return response.header('X-Data-Source', 'cache') }
 
     return response
   }
@@ -175,7 +174,7 @@ class AlbumsHandler {
      * @param {Request} request
      * @param {ResponseToolkit} h
      */
-  async postAlbumLikeByIdHandler(request, h) {
+  async postAlbumLikeByIdHandler (request, h) {
     const userId = request.auth.credentials.id
     const albumId = request.params.id
 
@@ -197,7 +196,7 @@ class AlbumsHandler {
      * @param {Request} request
      * @param {ResponseToolkit} h
      */
-  async deleteAlbumLikeByIdHandler(request, h) {
+  async deleteAlbumLikeByIdHandler (request, h) {
     const userId = request.auth.credentials.id
     const albumId = request.params.id
 

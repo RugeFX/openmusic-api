@@ -179,7 +179,7 @@ const init = async () => {
  * @param {import('@hapi/hapi').ResponseToolkit} h
  * @returns
  */
-function registerPreResponse(request, h) {
+function registerPreResponse (request, h) {
   const { response } = request
   if (response instanceof Error) {
     if (response instanceof ClientError) {
