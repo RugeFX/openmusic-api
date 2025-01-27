@@ -23,6 +23,11 @@ const routes = (handler) => [
     handler: handler.deleteAlbumByIdHandler
   },
   {
+    method: 'GET',
+    path: '/albums/{id}/likes',
+    handler: handler.getAlbumLikesByIdHandler
+  },
+  {
     method: 'POST',
     path: '/albums/{id}/covers',
     handler: handler.postUploadAlbumCoverHandler,

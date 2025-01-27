@@ -11,50 +11,56 @@ const autoBind = require('auto-bind')
 
 class AlbumsHandler {
   /**
-   * @param {AlbumsService} albumsService
-   * @param {SongsService} songsService
-   * @param {StorageService} storageService
-   * @param {AlbumsValidator} albumsValidator
-   * @param {UploadsValidator} uploadsValidator
-   */
-  constructor (albumsService, songsService, storageService, albumsValidator, uploadsValidator) {
-    /**
-     * @type {AlbumsService}
-     * @private
+     * @param {AlbumsService} albumsService
+     * @param {SongsService} songsService
+     * @param {StorageService} storageService
+     * @param {AlbumsValidator} albumsValidator
+     * @param {UploadsValidator} uploadsValidator
      */
+  constructor (
+    albumsService,
+    songsService,
+    storageService,
+    albumsValidator,
+    uploadsValidator
+  ) {
+    /**
+         * @type {AlbumsService}
+         * @private
+         */
     this._albumsService = albumsService
 
     /**
-     * @type {SongsService}
-     * @private
-     */
+         * @type {SongsService}
+         * @private
+         */
     this._songsService = songsService
 
     /**
-     * @type {StorageService}
-     * @private
-     */
+         * @type {StorageService}
+         * @private
+         */
     this._storageService = storageService
 
     /**
-     * @type {AlbumsValidator}
-     * @private
-     */
+         * @type {AlbumsValidator}
+         * @private
+         */
     this._albumsValidator = albumsValidator
 
     /**
-     * @type {UploadsValidator}
-     * @private
-     */
+         * @type {UploadsValidator}
+         * @private
+         */
     this._uploadsValidator = uploadsValidator
 
     autoBind(this)
   }
 
   /**
-   * @param {Request} request
-   * @param {ResponseToolkit} h
-   */
+     * @param {Request} request
+     * @param {ResponseToolkit} h
+     */
   async postAlbumHandler (request, h) {
     this._albumsValidator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
@@ -73,8 +79,8 @@ class AlbumsHandler {
   }
 
   /**
-   * @param {Request} request
-   */
+     * @param {Request} request
+     */
   async getAlbumByIdHandler (request) {
     const { id } = request.params
 
@@ -90,8 +96,8 @@ class AlbumsHandler {
   }
 
   /**
-   * @param {Request} request
-   */
+     * @param {Request} request
+     */
   async putAlbumByIdHandler (request) {
     this._albumsValidator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
@@ -106,8 +112,8 @@ class AlbumsHandler {
   }
 
   /**
-   * @param {Request} request
-   */
+     * @param {Request} request
+     */
   async deleteAlbumByIdHandler (request) {
     const { id } = request.params
 
@@ -120,9 +126,9 @@ class AlbumsHandler {
   }
 
   /**
-   * @param {Request} request
-   * @param {ResponseToolkit} h
-   */
+     * @param {Request} request
+     * @param {ResponseToolkit} h
+     */
   async postUploadAlbumCoverHandler (request, h) {
     const { cover } = request.payload
     const { id } = request.params
@@ -134,13 +140,65 @@ class AlbumsHandler {
       await this._storageService.deleteFile(album.coverUrl)
     }
 
-    const coverUrl = await this._storageService.writeFile(cover, cover.hapi)
+    const coverUrl = await this._storageService.writeFile(
+      cover,
+      cover.hapi
+    )
     await this._albumsService.editAlbumCoverById(id, coverUrl)
+
+    return h
+      .response({
+        status: 'success',
+        message: 'Sampul berhasil diunggah'
+      })
+      .code(201)
+  }
+
+  /**
+     * @param {Request} request
+     * @param {ResponseToolkit} h
+     */
+  async getAlbumLikesByIdHandler (request, h) {
+    const data = await this._albumsService.getAlbumLikesById(
+      request.params.id
+    )
+
+    return h.response({ status: 'success', data })
+  }
+
+  /**
+     * @param {Request} request
+     * @param {ResponseToolkit} h
+     */
+  async postAlbumLikeByIdHandler (request, h) {
+    const userId = request.auth.credentials.id
+    const albumId = request.params.id
+
+    await this._albumsService.verifyUserHasntLikedAlbum(userId, albumId)
+    await this._albumsService.likeAlbumById(userId, albumId)
+
+    return h
+      .response({
+        status: 'success',
+        message: 'Like berhasil ditambahkan'
+      })
+      .code(201)
+  }
+
+  /**
+     * @param {Request} request
+     * @param {ResponseToolkit} h
+     */
+  async deleteAlbumLikeByIdHandler (request, h) {
+    const userId = request.auth.credentials.id
+    const albumId = request.params.id
+
+    await this._albumsService.unlikeAlbumById(userId, albumId)
 
     return h.response({
       status: 'success',
-      message: 'Sampul berhasil diunggah'
-    }).code(201)
+      message: 'Like berhasil dihapus'
+    })
   }
 }
 
