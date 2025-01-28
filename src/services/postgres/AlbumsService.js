@@ -61,12 +61,12 @@ class AlbumsService {
      * @returns {Promise<Album>}
      */
   async getAlbumById (id) {
-    const albumQuery = {
+    const query = {
       text: 'SELECT * FROM albums WHERE id = $1',
       values: [id]
     }
 
-    const { rowCount, rows } = await this._pool.query(albumQuery)
+    const { rowCount, rows } = await this._pool.query(query)
 
     if (!rowCount) {
       throw new NotFoundError('Album tidak ditemukan')
