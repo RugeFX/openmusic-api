@@ -11,12 +11,12 @@ const autoBind = require('auto-bind')
 
 class AlbumsHandler {
   /**
-     * @param {AlbumsService} albumsService
-     * @param {SongsService} songsService
-     * @param {StorageService} storageService
-     * @param {AlbumsValidator} albumsValidator
-     * @param {UploadsValidator} uploadsValidator
-     */
+   * @param {AlbumsService} albumsService
+   * @param {SongsService} songsService
+   * @param {StorageService} storageService
+   * @param {AlbumsValidator} albumsValidator
+   * @param {UploadsValidator} uploadsValidator
+   */
   constructor (
     albumsService,
     songsService,
@@ -25,62 +25,60 @@ class AlbumsHandler {
     uploadsValidator
   ) {
     /**
-         * @type {AlbumsService}
-         * @private
-         */
+     * @type {AlbumsService}
+     * @private
+     */
     this._albumsService = albumsService
 
     /**
-         * @type {SongsService}
-         * @private
-         */
+     * @type {SongsService}
+     * @private
+     */
     this._songsService = songsService
 
     /**
-         * @type {StorageService}
-         * @private
-         */
+     * @type {StorageService}
+     * @private
+     */
     this._storageService = storageService
 
     /**
-         * @type {AlbumsValidator}
-         * @private
-         */
+     * @type {AlbumsValidator}
+     * @private
+     */
     this._albumsValidator = albumsValidator
 
     /**
-         * @type {UploadsValidator}
-         * @private
-         */
+     * @type {UploadsValidator}
+     * @private
+     */
     this._uploadsValidator = uploadsValidator
 
     autoBind(this)
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
   async postAlbumHandler (request, h) {
     this._albumsValidator.validateAlbumPayload(request.payload)
     const { name, year } = request.payload
 
     const albumId = await this._albumsService.addAlbum({ name, year })
 
-    const response = h.response({
+    return h.response({
       status: 'success',
       message: 'Album berhasil ditambahkan',
       data: {
         albumId
       }
-    })
-    response.code(201)
-    return response
+    }).code(201)
   }
 
   /**
-     * @param {Request} request
-     */
+   * @param {Request} request
+   */
   async getAlbumByIdHandler (request) {
     const { id } = request.params
 
@@ -96,14 +94,12 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     */
+   * @param {Request} request
+   */
   async putAlbumByIdHandler (request) {
     this._albumsValidator.validateAlbumPayload(request.payload)
-    const { name, year } = request.payload
-    const { id } = request.params
 
-    await this._albumsService.editAlbumById(id, { name, year })
+    await this._albumsService.editAlbumById(request.params.id, request.payload)
 
     return {
       status: 'success',
@@ -112,12 +108,10 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     */
+   * @param {Request} request
+   */
   async deleteAlbumByIdHandler (request) {
-    const { id } = request.params
-
-    await this._albumsService.deleteAlbumById(id)
+    await this._albumsService.deleteAlbumById(request.params.id)
 
     return {
       status: 'success',
@@ -126,9 +120,9 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
   async postUploadAlbumCoverHandler (request, h) {
     const { cover } = request.payload
     const { id } = request.params
@@ -155,9 +149,9 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+   * @param {Request} request
+    * @param {ResponseToolkit} h
+    */
   async getAlbumLikesByIdHandler (request, h) {
     const { via, likes } = await this._albumsService.getAlbumLikesById(
       request.params.id
@@ -171,12 +165,12 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
   async postAlbumLikeByIdHandler (request, h) {
-    const userId = request.auth.credentials.id
-    const albumId = request.params.id
+    const { id: userId } = request.auth.credentials
+    const { id: albumId } = request.params
 
     await Promise.all([
       this._albumsService.getAlbumById(albumId),
@@ -193,14 +187,11 @@ class AlbumsHandler {
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+   * @param {Request} request
+   * @param {ResponseToolkit} h
+   */
   async deleteAlbumLikeByIdHandler (request, h) {
-    const userId = request.auth.credentials.id
-    const albumId = request.params.id
-
-    await this._albumsService.unlikeAlbumById(userId, albumId)
+    await this._albumsService.unlikeAlbumById(request.auth.credentials.id, request.params.id)
 
     return h.response({
       status: 'success',

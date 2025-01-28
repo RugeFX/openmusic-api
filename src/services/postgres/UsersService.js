@@ -37,12 +37,12 @@ class UsersService {
       values: [id, data.username, hashedPassword, data.fullname]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (result.rowCount === 0) {
+    if (rowCount === 0) {
       throw new InvariantError('User gagal ditambahkan')
     }
-    return result.rows[0].id
+    return rows[0].id
   }
 
   /**
@@ -55,13 +55,13 @@ class UsersService {
       values: [userId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (result.rowCount === 0) {
+    if (rowCount === 0) {
       throw new NotFoundError('User tidak ditemukan')
     }
 
-    return result.rows[0]
+    return rows[0]
   }
 
   /**
@@ -73,9 +73,9 @@ class UsersService {
       values: [username]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (result.rowCount > 0) {
+    if (rowCount > 0) {
       throw new InvariantError('Gagal menambahkan user. Username sudah digunakan.')
     }
   }
@@ -91,13 +91,13 @@ class UsersService {
       values: [username]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (result.rowCount === 0) {
+    if (rowCount === 0) {
       throw new AuthenticationError('Kredensial yang Anda berikan salah')
     }
 
-    const { id, password: hashedPassword } = result.rows[0]
+    const { id, password: hashedPassword } = rows[0]
 
     const match = await compare(password, hashedPassword)
 
@@ -117,9 +117,9 @@ class UsersService {
       text: 'SELECT id, username, fullname FROM users WHERE username LIKE $1',
       values: [`%${username}%`]
     }
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    return result.rows
+    return rows
   }
 }
 

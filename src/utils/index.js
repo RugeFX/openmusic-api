@@ -3,8 +3,6 @@ const config = require('./config')
 
 /**
  * @import { Song } from '../services/postgres/SongsService'
- * @import { Playlist, PlaylistSongActivity } from '../services/postgres/PlaylistsService'
- * @import { User} from '../services/postgres/UsersService'
  */
 
 /** @param {Omit<Song, "albumId"> & { album_id: Song["albumId"] }} initial */
@@ -28,25 +26,6 @@ const mapDBSongToModel =
   })
 
 /**
- * @param {Playlist & { username: User["username"] }} initial
- */
-const mapDBPlaylistToResponse = ({ id, name, username }) => ({ id, name, username })
-
-/**
- * @param {Song} initial
- */
-const mapDBPlaylistSongsToResponse = ({ id, title, performer }) => ({ id, title, performer })
-
-/**
- * @param {Object} initial
- * @param {string} initial.username
- * @param {string} initial.title
- * @param {string} initial.action
- * @param {string} initial.time
- */
-const mapDBActivitiesToResponse = ({ username, title, action, time }) => ({ username, title, action, time })
-
-/**
  *
  * @param {Object} initial
  * @param {string} initial.id
@@ -57,4 +36,4 @@ const mapDBActivitiesToResponse = ({ username, title, action, time }) => ({ user
  */
 const mapDBAlbumToModel = ({ id, name, year, cover_url }) => ({ id, name, year, coverUrl: cover_url ? `http://${config.app.host}:${config.app.port}/upload/covers/${cover_url}` : null })
 
-module.exports = { mapDBSongToModel, mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse, mapDBAlbumToModel }
+module.exports = { mapDBSongToModel, mapDBAlbumToModel }

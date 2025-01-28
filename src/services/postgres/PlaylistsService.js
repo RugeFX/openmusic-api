@@ -56,13 +56,13 @@ class PlaylistsService {
       values: [id, name, owner]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
+    if (!rows[0].id) {
       throw new InvariantError('Playlist gagal ditambahkan')
     }
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   /**
@@ -71,16 +71,16 @@ class PlaylistsService {
    */
   async getPlaylists (owner) {
     const query = {
-      text: `SELECT playlists.*, users.username FROM playlists
-                    LEFT JOIN collaborations ON collaborations.playlist_id = playlists.id
-                    LEFT JOIN users ON playlists.owner = users.id
-                    WHERE playlists.owner = $1 OR collaborations.user_id = $1
-                    GROUP BY playlists.id, users.username`,
+      text: `SELECT p.id, p.name, u.username FROM playlists p
+                    LEFT JOIN collaborations c ON c.playlist_id = p.id
+                    LEFT JOIN users u ON p.owner = u.id
+                    WHERE p.owner = $1 OR c.user_id = $1
+                    GROUP BY p.id, u.username`,
       values: [owner]
     }
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    return result.rows
+    return rows
   }
 
   /**
@@ -95,13 +95,13 @@ class PlaylistsService {
                     WHERE playlists.id = $1`,
       values: [id]
     }
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan')
     }
 
-    return result.rows[0]
+    return rows[0]
   }
 
   /**
@@ -110,16 +110,16 @@ class PlaylistsService {
    */
   async getPlaylistSongsById (id) {
     const query = {
-      text: 'SELECT s.* FROM songs s LEFT JOIN playlist_songs ps ON s.id = ps.song_id WHERE ps.playlist_id = $1',
+      text: 'SELECT s.id, s.title, s.performer FROM songs s LEFT JOIN playlist_songs ps ON s.id = ps.song_id WHERE ps.playlist_id = $1',
       values: [id]
     }
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan')
     }
 
-    return result.rows
+    return rows
   }
 
   /**
@@ -131,9 +131,9 @@ class PlaylistsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Playlist gagal dihapus. Id tidak ditemukan')
     }
   }
@@ -151,9 +151,9 @@ class PlaylistsService {
       values: [id, playlistId, songId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new InvariantError('Lagu gagal ditambah ke Playlist')
     }
   }
@@ -169,9 +169,9 @@ class PlaylistsService {
       values: [playlistId, songId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Lagu / Playlist tidak ditemukan')
     }
   }
@@ -191,52 +191,36 @@ class PlaylistsService {
       values: [id, action, userId, songId, playlistId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
+    if (!rows[0].id) {
       throw new InvariantError('Activity gagal ditambahkan')
     }
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   /**
    * @param {Playlist["id"]} playlistId
-   * @returns {Promise<Array<PlaylistSongActivity & { username: User["username"], title: Song["title"] }>>}
+   * @returns {Promise<Array<Pick<PlaylistSongActivity, "action" | "time"> & { username: User["username"], title: Song["title"] }>>}
    */
   async getPlaylistActivities (playlistId) {
     const query = {
-      text: `SELECT playlist_activities.*, users.username, songs.title FROM playlist_activities
-                    LEFT JOIN users ON users.id = playlist_activities.user_id
-                    LEFT JOIN songs ON songs.id = playlist_activities.song_id
-                    WHERE playlist_activities.playlist_id = $1
-                    ORDER BY playlist_activities.time ASC`,
+      text: `SELECT pa.action, pa.time, u.username, s.title FROM playlist_activities pa
+                    LEFT JOIN users ON u.id = pa.user_id
+                    LEFT JOIN songs ON s.id = pa.song_id
+                    WHERE pa.playlist_id = $1
+                    ORDER BY pa.time ASC`,
       values: [playlistId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Playlist activities tidak ditemukan')
     }
 
-    return result.rows
-  }
-
-  /**
-   * @param {Playlist["id"]} playlistId
-   */
-  async verifyPlaylistExists (playlistId) {
-    const query = {
-      text: 'SELECT id FROM playlists WHERE id = $1',
-      values: [playlistId]
-    }
-
-    const result = await this._pool.query(query)
-
-    if (!result.rowCount) {
-      throw new NotFoundError('Playlist tidak ditemukan')
-    }
+    return rows
   }
 
   /**
@@ -249,13 +233,13 @@ class PlaylistsService {
       values: [playlistId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Playlist tidak ditemukan')
     }
 
-    if (result.rows[0].owner !== userId) {
+    if (rows[0].owner !== userId) {
       throw new AuthorizationError('Anda tidak berhak mengakses resource ini')
     }
   }

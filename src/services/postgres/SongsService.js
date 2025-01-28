@@ -38,13 +38,13 @@ class SongsService {
       values: [id, title, year, genre, performer, duration, albumId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
+    if (!rows[0].id) {
       throw new InvariantError('Lagu gagal ditambahkan')
     }
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   /**
@@ -52,6 +52,7 @@ class SongsService {
    * @param {Song["title"]} [params.title]
    * @param {Song["performer"]} [params.performer]
    * @param {import('./AlbumsService').Album["id"]} [params.albumId]
+   * @returns {Promise<Pick<Song, "id" | "title" | "performer">[]>}
   */
   async getSongs ({ title, performer, albumId }) {
     const conditions = []
@@ -74,8 +75,8 @@ class SongsService {
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : ''
 
-    const result = await this._pool.query(`SELECT * FROM songs ${whereClause}`, values)
-    return result.rows.map(mapDBSongToModel)
+    const { rows } = await this._pool.query(`SELECT id, title, performer FROM songs ${whereClause}`, values)
+    return rows
   }
 
   /**
@@ -86,13 +87,13 @@ class SongsService {
       text: 'SELECT * FROM songs WHERE id = $1',
       values: [id]
     }
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Lagu tidak ditemukan')
     }
 
-    return result.rows.map(mapDBSongToModel)[0]
+    return rows.map(mapDBSongToModel)[0]
   }
 
   /**
@@ -105,9 +106,9 @@ class SongsService {
       values: [title, year, genre, performer, duration, albumId, id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Gagal memperbarui lagu. Id tidak ditemukan')
     }
   }
@@ -121,26 +122,10 @@ class SongsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Lagu gagal dihapus. Id tidak ditemukan')
-    }
-  }
-
-  /**
-   * @param {Song["id"]} id
-   */
-  async verifySongExists (id) {
-    const query = {
-      text: 'SELECT id FROM songs WHERE id = $1',
-      values: [id]
-    }
-
-    const result = await this._pool.query(query)
-
-    if (!result.rowCount) {
-      throw new NotFoundError('Lagu tidak ditemukan')
     }
   }
 }

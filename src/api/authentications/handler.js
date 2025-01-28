@@ -63,16 +63,14 @@ class AuthenticationsHandler {
 
     await this._authenticationsService.addRefreshToken(refreshToken)
 
-    const response = h.response({
+    return h.response({
       status: 'success',
       message: 'Authentication berhasil ditambahkan',
       data: {
         accessToken,
         refreshToken
       }
-    })
-    response.code(201)
-    return response
+    }).code(201)
   }
 
   /**
@@ -87,6 +85,7 @@ class AuthenticationsHandler {
     const { id } = this._tokenManager.verifyRefreshToken(refreshToken)
 
     const accessToken = this._tokenManager.generateAccessToken({ id })
+
     return h.response({
       status: 'success',
       message: 'Access Token berhasil diperbarui',

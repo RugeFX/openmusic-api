@@ -22,20 +22,23 @@ class AlbumsService {
    */
   constructor (cacheService) {
     /**
-         * @type {Pool}
-         * @private
-         */
+     * @type {Pool}
+     * @private
+     */
     this._pool = new Pool()
-
+    /**
+     * @type {CacheService}
+     * @private
+     */
     this._cacheService = cacheService
 
     autoBind(this)
   }
 
   /**
-     * @param {Pick<Album, "name" | "year">} payload
-     * @returns {Promise<Album["id"]>}
-     */
+   * @param {Pick<Album, "name" | "year">} payload
+   * @returns {Promise<Album["id"]>}
+   */
   async addAlbum ({ name, year }) {
     const id = `album-${nanoid(16)}`
 
@@ -44,13 +47,13 @@ class AlbumsService {
       values: [id, name, year]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
+    if (!rows[0].id) {
       throw new InvariantError('Album gagal ditambahkan')
     }
 
-    return result.rows[0].id
+    return rows[0].id
   }
 
   /**
@@ -63,13 +66,13 @@ class AlbumsService {
       values: [id]
     }
 
-    const albumResult = await this._pool.query(albumQuery)
+    const { rowCount, rows } = await this._pool.query(albumQuery)
 
-    if (!albumResult.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Album tidak ditemukan')
     }
 
-    return albumResult.rows.map(mapDBAlbumToModel)[0]
+    return rows.map(mapDBAlbumToModel)[0]
   }
 
   /**
@@ -82,9 +85,9 @@ class AlbumsService {
       values: [name, year, id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError(
         'Gagal memperbarui album. Id tidak ditemukan'
       )
@@ -100,9 +103,9 @@ class AlbumsService {
       values: [id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan')
     }
 
@@ -119,9 +122,9 @@ class AlbumsService {
       values: [coverUrl, id]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError(
         'Gagal memperbarui cover album. Id tidak ditemukan'
       )
@@ -143,13 +146,13 @@ class AlbumsService {
         values: [id]
       }
 
-      const result = await this._pool.query(query)
+      const { rowCount, rows } = await this._pool.query(query)
 
-      if (!result.rowCount) {
+      if (!rowCount) {
         throw new NotFoundError('Album tidak ditemukan')
       }
 
-      const likes = parseInt(result.rows[0].count)
+      const likes = parseInt(rows[0].count)
       await this._cacheService.set(`likes:${id}`, `${likes}`, 1800)
 
       return { via: 'database', likes }
@@ -168,15 +171,15 @@ class AlbumsService {
       values: [id, userId, albumId]
     }
 
-    const result = await this._pool.query(query)
+    const { rows } = await this._pool.query(query)
 
-    if (!result.rows[0].id) {
+    if (!rows[0].id) {
       throw new InvariantError('Like gagal ditambahkan')
     }
 
     await this._cacheService.delete(`likes:${albumId}`)
 
-    return result.rows[0]
+    return rows[0]
   }
 
   /**
@@ -189,15 +192,15 @@ class AlbumsService {
       values: [userId, albumId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount, rows } = await this._pool.query(query)
 
-    if (!result.rowCount) {
+    if (!rowCount) {
       throw new NotFoundError('Like gagal dihapus. Id tidak ditemukan')
     }
 
     await this._cacheService.delete(`likes:${albumId}`)
 
-    return result.rows[0]
+    return rows[0]
   }
 
   /**
@@ -210,9 +213,9 @@ class AlbumsService {
       values: [userId, albumId]
     }
 
-    const result = await this._pool.query(query)
+    const { rowCount } = await this._pool.query(query)
 
-    if (result.rowCount) {
+    if (rowCount) {
       throw new InvariantError(
         'User telah memberikan like pada album ini'
       )

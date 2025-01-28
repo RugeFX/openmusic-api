@@ -1,5 +1,4 @@
 const autoBind = require('auto-bind')
-const { mapDBPlaylistToResponse, mapDBPlaylistSongsToResponse, mapDBActivitiesToResponse } = require('../../utils')
 
 /**
  * @import { Request, ResponseToolkit } from "@hapi/hapi"
@@ -48,13 +47,12 @@ class PlaylistsHandler {
    * @param {Request} request
    */
   async getPlaylistsHandler (request) {
-    const { id: credentialId } = request.auth.credentials
-    const playlists = await this._playlistsService.getPlaylists(credentialId)
+    const playlists = await this._playlistsService.getPlaylists(request.auth.credentials.id)
 
     return {
       status: 'success',
       data: {
-        playlists: playlists.map(mapDBPlaylistToResponse)
+        playlists
       }
     }
   }
@@ -64,10 +62,10 @@ class PlaylistsHandler {
    * @param {ResponseToolkit} h
    */
   async postPlaylistHandler (request, h) {
-    const { id: owner } = request.auth.credentials
-
     this._validator.validatePlaylistPayload(request.payload)
+
     const { name } = request.payload
+    const { id: owner } = request.auth.credentials
 
     const playlistId = await this._playlistsService.addPlaylist({ name, owner })
 
@@ -103,12 +101,11 @@ class PlaylistsHandler {
   async postSongToPlaylistHandler (request, h) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
-    const { songId } = request.payload
 
     this._validator.validatePlaylistSongPayload(request.payload)
+    const { songId } = request.payload
 
-    await this._songsService.verifySongExists(songId)
-    await this._playlistsService.verifyPlaylistExists(playlistId)
+    await this._songsService.getSongById(songId)
     await this._playlistsService.verifyPlaylistAccess(playlistId, userId)
 
     await this._playlistsService.addSongToPlaylist({ playlistId, songId })
@@ -124,16 +121,15 @@ class PlaylistsHandler {
    * @param {Request} request
    */
   async getSongsFromPlaylistHandler (request) {
-    const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
 
-    await this._playlistsService.verifyPlaylistAccess(playlistId, userId)
+    await this._playlistsService.verifyPlaylistAccess(playlistId, request.auth.credentials.id)
     const { id, name, username } = await this._playlistsService.getPlaylistById(playlistId)
     const songs = await this._playlistsService.getPlaylistSongsById(playlistId)
 
     return {
       status: 'success',
-      data: { playlist: { id, name, username, songs: songs.map(mapDBPlaylistSongsToResponse) } }
+      data: { playlist: { id, name, username, songs } }
     }
   }
 
@@ -143,9 +139,9 @@ class PlaylistsHandler {
   async deleteSongFromPlaylistHandler (request) {
     const { id: userId } = request.auth.credentials
     const { id: playlistId } = request.params
-    const { songId } = request.payload
 
     this._validator.validatePlaylistSongPayload(request.payload)
+    const { songId } = request.payload
 
     await this._playlistsService.verifyPlaylistAccess(playlistId, userId)
 
@@ -173,7 +169,7 @@ class PlaylistsHandler {
       status: 'success',
       data: {
         playlistId,
-        activities: activities.map(mapDBActivitiesToResponse)
+        activities
       }
     }
   }
