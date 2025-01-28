@@ -191,7 +191,7 @@ function registerPreResponse (request, h) {
         .code(response.statusCode)
     }
 
-    console.log(response)
+    console.error(response)
 
     return !response.isServer
       ? h.continue

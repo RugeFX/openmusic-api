@@ -207,8 +207,8 @@ class PlaylistsService {
   async getPlaylistActivities (playlistId) {
     const query = {
       text: `SELECT pa.action, pa.time, u.username, s.title FROM playlist_activities pa
-                    LEFT JOIN users ON u.id = pa.user_id
-                    LEFT JOIN songs ON s.id = pa.song_id
+                    LEFT JOIN users u ON u.id = pa.user_id
+                    LEFT JOIN songs s ON s.id = pa.song_id
                     WHERE pa.playlist_id = $1
                     ORDER BY pa.time ASC`,
       values: [playlistId]
