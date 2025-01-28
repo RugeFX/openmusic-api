@@ -9,34 +9,34 @@ const autoBind = require('auto-bind')
 
 class ExportsHandler {
   /**
-   * @param {ProducerService} producerService
-   * @param {PlaylistsService} playlistsService
-   * @param {Validator} validator
-   */
+         * @param {ProducerService} producerService
+         * @param {PlaylistsService} playlistsService
+         * @param {Validator} validator
+         */
   constructor (producerService, playlistsService, validator) {
     /**
-         * @type {ProducerService}
-         * @private
-         */
+                     * @type {ProducerService}
+                     * @private
+                     */
     this._producerService = producerService
     /**
-         * @type {PlaylistsService}
-         * @private
-         */
+                     * @type {PlaylistsService}
+                     * @private
+                     */
     this._playlistsService = playlistsService
     /**
-         * @type {Validator}
-         * @private
-         */
+                     * @type {Validator}
+                     * @private
+                     */
     this._validator = validator
 
     autoBind(this)
   }
 
   /**
-     * @param {Request} request
-     * @param {ResponseToolkit} h
-     */
+           * @param {Request} request
+           * @param {ResponseToolkit} h
+           */
   async postExportPlaylistHandler (request, h) {
     const { playlistId } = request.params
     this._validator.validateExportPlaylistPayload(request.payload)
@@ -46,7 +46,6 @@ class ExportsHandler {
 
     const message = {
       playlistId,
-      userId,
       targetEmail: request.payload.targetEmail
     }
 
